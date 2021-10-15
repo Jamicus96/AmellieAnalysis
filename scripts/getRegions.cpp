@@ -16,7 +16,7 @@ int OptimiseDivideAndConquer(std::string inputFile, int nbins, bool verbose, boo
 std::vector<double> GetThreePoints(double bestPoint, double worstPoint, std::vector<double> originalPoints);
 std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixedPoints, int numVar, TH2F *allPathsHist, TH2F *reEmittedHist, TH2F *scatteredHist, std::string signal);
 std::vector<double> GetBestFOM(std::vector<double> FOMs, std::vector<double> points);
-std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F *hReEmittedPaths, TH2F *hAllPaths, TH2F *hNoisePaths, TH2F *hSingleScatterPaths, TH2F *hOtherPaths, TH2F *hNoEffectPaths, TH2F *hNearReflectPaths, TH2F *hRopesPaths, TH2F *hPMTReflectionPaths, TH2F *hExtWaterScatterPaths, TH2F *hInnerAvReflectPaths, TH2F *hMultipleEffectPaths, TH2F *hAVPipesPaths, TH2F *hAcrylicPaths, TH2F *hOtherScatterPaths, std::ofstream outputFile_txt);
+std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F *hReEmittedPaths, TH2F *hAllPaths, TH2F *hNoisePaths, TH2F *hSingleScatterPaths, TH2F *hOtherPaths, TH2F *hNoEffectPaths, TH2F *hNearReflectPaths, TH2F *hRopesPaths, TH2F *hPMTReflectionPaths, TH2F *hExtWaterScatterPaths, TH2F *hInnerAvReflectPaths, TH2F *hMultipleEffectPaths, TH2F *hAVPipesPaths, TH2F *hAcrylicPaths, TH2F *hOtherScatterPaths, std::string saveroot_txt);
 std::vector<double> CheckPoints(std::vector<double> points, std::vector<double> fixedPoints, int numVar);
 
 int main(int argc, char** argv){
@@ -521,6 +521,7 @@ int OptimiseDivideAndConquer(std::string inputFile, int nbins, bool verbose, boo
     outputFile_txt << std::to_string(fixedPoints.at(3)) + "\n"; // y_a
     outputFile_txt << std::to_string(fixedPoints.at(4)) + "\n"; // y_b
     outputFile_txt << std::to_string(fixedPoints.at(5)) + "\n"; // y_c
+    outputFile_txt.close();
 
     // now use final result to get region, write to file
 
@@ -533,8 +534,7 @@ int OptimiseDivideAndConquer(std::string inputFile, int nbins, bool verbose, boo
     if(verbose) std::cout << "    y_c: " << fixedPoints.at(5) << std::endl;
     if(verbose) std::cout << "There were " << numMainLoopIterations << " iterations of the main loop" << std::endl;
 
-    std::vector<TH2F*> regionSelectedHists = GetRegionSelectedHists(fixedPoints, hReEmittedPaths, hAllPaths, hNoisePaths, hSingleScatterPaths, hOtherPaths, hNoEffectPaths, hNearReflectPaths, hRopesPaths, hPMTReflectionPaths, hExtWaterScatterPaths, hInnerAvReflectPaths, hMultipleEffectPaths, hAVPipesPaths, hAcrylicPaths, hOtherScatterPaths, outputFile_txt);
-    outputFile_txt.close();
+    std::vector<TH2F*> regionSelectedHists = GetRegionSelectedHists(fixedPoints, hReEmittedPaths, hAllPaths, hNoisePaths, hSingleScatterPaths, hOtherPaths, hNoEffectPaths, hNearReflectPaths, hRopesPaths, hPMTReflectionPaths, hExtWaterScatterPaths, hInnerAvReflectPaths, hMultipleEffectPaths, hAVPipesPaths, hAcrylicPaths, hOtherScatterPaths, saveroot_txt);
     // get file name from path+filename string
     std::size_t botDirPos = inputFile.find_last_of("/");
     std::string filename = inputFile.substr(botDirPos+1, inputFile.length());
@@ -1162,7 +1162,7 @@ std::vector<double> GetBestFOM(std::vector<double> FOMs, std::vector<double> poi
  * @param hOtherScatterPaths Original histogram.
  * @return std::vector<TH2F*> 
  */
-std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F *hReEmittedPaths, TH2F *hAllPaths, TH2F *hNoisePaths, TH2F *hSingleScatterPaths, TH2F *hOtherPaths, TH2F *hNoEffectPaths, TH2F *hNearReflectPaths, TH2F *hRopesPaths, TH2F *hPMTReflectionPaths, TH2F *hExtWaterScatterPaths, TH2F *hInnerAvReflectPaths, TH2F *hMultipleEffectPaths, TH2F *hAVPipesPaths, TH2F *hAcrylicPaths, TH2F *hOtherScatterPaths, std::ofstream outputFile_txt){
+std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F *hReEmittedPaths, TH2F *hAllPaths, TH2F *hNoisePaths, TH2F *hSingleScatterPaths, TH2F *hOtherPaths, TH2F *hNoEffectPaths, TH2F *hNearReflectPaths, TH2F *hRopesPaths, TH2F *hPMTReflectionPaths, TH2F *hExtWaterScatterPaths, TH2F *hInnerAvReflectPaths, TH2F *hMultipleEffectPaths, TH2F *hAVPipesPaths, TH2F *hAcrylicPaths, TH2F *hOtherScatterPaths, std::string saveroot_txt){
 
     //FIXME: pass in vector of hists?
 
@@ -1270,7 +1270,9 @@ std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F 
     double reflected_min_time = hNearReflectPaths->ProjectionY()->GetXaxis()->GetBinCenter(hNearReflectPaths->ProjectionY()->GetMaximumBin()) - 10;
     double reflected_cos_alpha = 0.95; //FIXME: don't hardcode this
 
-    // Print to Regions lims file
+    // Print to Regions lims file (append)
+    std::ofstream outputFile_txt;
+    outputFile_txt.open(saveroot_txt.c_str(), std::ios::app);
     outputFile_txt << std::to_string(direct_max_time) + "\n";
     outputFile_txt << std::to_string(direct_min_time) + "\n";
     outputFile_txt << std::to_string(direct_cos_alpha) + "\n";
