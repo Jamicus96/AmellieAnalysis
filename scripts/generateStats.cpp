@@ -715,7 +715,7 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
         h->Draw();  // Draw histogram
 
         // create lines
-        std::vector<TLine> lines;
+        std::vector<*TLine> lines;
         lines.push_back(TLine(x_a, y_a, x_b, y_b));
         lines.push_back(TLine(x_a, y_a, x_c, y_c));
         lines.push_back(TLine(x_c, y_c, x_b, y_b));
@@ -732,7 +732,7 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
 
         // draw lines
         for(int i=0; i<lines.size(); ++i){
-            *(lines[i])->Draw("SAME");
+            lines[i]->Draw("SAME");
         }
 
         // Write canvas to root file
