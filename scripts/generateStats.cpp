@@ -712,7 +712,7 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
         // Draw box cuts and direct/reflected beam maxima on resthit vs costheta hist
         TCanvas *c1 = new TCanvas("cuts","cuts");  //Create output canvas to be saved in output file
         TH2F *h = (TH2F*)hAllPaths->Clone();
-        h->Draw();  // Draw histogram
+        h->Draw("colz");  // Draw histogram
 
         // create lines
         std::vector<TLine> lines;
@@ -732,6 +732,7 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
 
         // draw lines
         for(int i=0; i<lines.size(); ++i){
+            lines[i].SetLineColor(kYellow);
             lines[i].Draw("SAME");
         }
 
