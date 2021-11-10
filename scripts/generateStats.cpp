@@ -5,6 +5,9 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TVectorD.h>
+#include <vector>
+#include <TCanvas.h>
+#include <TLine.h>
 
 /*
 Either: 
@@ -705,6 +708,36 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
         hRegionCutPmtResTimeVsCosTheta->Write();
         hDirectCutPmtResTimeVsCosTheta->Write();
         hReflectedCutPmtResTimeVsCosTheta->Write();
+
+        // Draw box cuts and direct/reflected beam maxima on resthit vs costheta hist
+        TCanvas *c1 = new TCanvas("cuts","cuts");  //Create output canvas to be saved in output file
+        hAllPaths.Draw();  // Draw histogram
+
+        // create lines
+        std::vector<TLine*> lines;
+        lines.push_back(TLine(x_a, y_a, x_b, y_b));
+        lines.push_back(TLine(x_a, y_a, x_c, y_c));
+        lines.push_back(TLine(x_c, y_c, x_b, y_b));
+
+        lines.push_back(TLine(min_angle_direct_beam_spot, min_time_direct_beam_spot, min_angle_direct_beam_spot, max_time_direct_beam_spot));
+        lines.push_back(TLine(-1, min_time_direct_beam_spot, -1, max_time_direct_beam_spot));
+        lines.push_back(TLine(-1, max_time_direct_beam_spot, min_angle_direct_beam_spot, max_time_direct_beam_spot));
+        lines.push_back(TLine(-1, min_time_direct_beam_spot, min_angle_direct_beam_spot, min_time_direct_beam_spot));
+
+        lines.push_back(TLine(min_angle_reflected_beam_spot, min_time_reflected_beam_spot, min_angle_reflected_beam_spot, max_time_reflected_beam_spot));
+        lines.push_back(TLine(1, min_time_reflected_beam_spot, 1, max_time_reflected_beam_spot));
+        lines.push_back(TLine(1, max_time_reflected_beam_spot, min_angle_reflected_beam_spot, max_time_reflected_beam_spot));
+        lines.push_back(TLine(1, min_time_reflected_beam_spot, min_angle_reflected_beam_spot, min_time_reflected_beam_spot));
+
+        // draw lines
+        for(i=0; i<lines.size(); ++i){
+            lines[i].Draw("SAME");
+        }
+
+        // Write canvas to root file
+        c1->Write();  
+        delete c1;
+
         rootfile->Write();
         rootfile->Close();
 
