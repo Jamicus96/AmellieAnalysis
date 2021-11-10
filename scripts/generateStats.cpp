@@ -714,7 +714,7 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
         hAllPaths.Draw();  // Draw histogram
 
         // create lines
-        std::vector<TLine*> lines;
+        std::vector<TLine> lines;
         lines.push_back(TLine(x_a, y_a, x_b, y_b));
         lines.push_back(TLine(x_a, y_a, x_c, y_c));
         lines.push_back(TLine(x_c, y_c, x_b, y_b));
@@ -730,7 +730,7 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
         lines.push_back(TLine(1, min_time_reflected_beam_spot, min_angle_reflected_beam_spot, min_time_reflected_beam_spot));
 
         // draw lines
-        for(i=0; i<lines.size(); ++i){
+        for(int i=0; i<lines.size(); ++i){
             lines[i].Draw("SAME");
         }
 
