@@ -710,19 +710,19 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
         hReflectedCutPmtResTimeVsCosTheta->Write();
 
         // Find maxima (pasted code from get Regions. will need to make hist of "second" half of hist bins only for reflected. direct uses whole hist)
-        double direct_max_time = (TH2F*)hAllPaths->ProjectionY()->GetXaxis()->GetBinCenter(hAllPaths->ProjectionY()->GetMaximumBin());
-        double direct_max_cosTheta = (TH2F*)hAllPaths->ProjectionX()->GetXaxis()->GetBinCenter(hAllPaths->ProjectionX()->GetMaximumBin());
+        double direct_max_time = hAllPaths->ProjectionY()->GetXaxis()->GetBinCenter(hAllPaths->ProjectionY()->GetMaximumBin());
+        double direct_max_cosTheta = hAllPaths->ProjectionX()->GetXaxis()->GetBinCenter(hAllPaths->ProjectionX()->GetMaximumBin());
 
         TH2F *right_half_hist = (TH2F*)hAllPaths->Clone();
         for(int x=1; x<right_half_hist->GetNbinsX()+1; x++){ //loop over histogram bins
             if(right_half_hist->GetXaxis()->GetBinCenter(x) <= 0.0) {
-                for(int y=1; y<hReEmittedPaths->GetNbinsY()+1; y++){ //loop over histogram bins
+                for(int y=1; y<right_half_hist->GetNbinsY()+1; y++){ //loop over histogram bins
                     right_half_hist->SetBinContent(x,y,0);  // Set right hand side of this hist to zero, to eliminate diret beam spot
                 }
             }
         }
         double reflected_max_time = right_half_hist->ProjectionY()->GetXaxis()->GetBinCenter(right_half_hist->ProjectionY()->GetMaximumBin());
-        double reflected_max_cosTheta = (TH2F*)right_half_hist->ProjectionX()->GetXaxis()->GetBinCenter(right_half_hist->ProjectionX()->GetMaximumBin());
+        double reflected_max_cosTheta = right_half_hist->ProjectionX()->GetXaxis()->GetBinCenter(right_half_hist->ProjectionX()->GetMaximumBin());
 
         // Draw box cuts and direct/reflected beam maxima on resthit vs costheta hist
         TCanvas *c1 = new TCanvas("cuts","cuts");  //Create output canvas to be saved in output file
