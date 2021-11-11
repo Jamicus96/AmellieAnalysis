@@ -715,7 +715,7 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
 
         TH2F *right_half_hist = (TH2F*)hAllPaths->Clone();
         for(int x=1; x<right_half_hist->GetNbinsX()+1; x++){ //loop over histogram bins
-            if(right_half_hist->GetXaxis()->GetBinCenter(x) <= 0.0) {
+            if(right_half_hist->GetXaxis()->GetBinCenter(x) <= 0.8) {
                 for(int y=1; y<right_half_hist->GetNbinsY()+1; y++){ //loop over histogram bins
                     right_half_hist->SetBinContent(x,y,0);  // Set right hand side of this hist to zero, to eliminate diret beam spot
                 }
