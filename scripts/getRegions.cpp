@@ -1275,12 +1275,12 @@ std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F 
     double reflected_cos_alpha = 0.95; //FIXME: don't hardcode this
 
     // Print to Regions lims file
-    outputFile_txt << std::to_string(direct_max_time)) + "\n";
-    outputFile_txt << std::to_string(direct_min_time)) + "\n";
-    outputFile_txt << std::to_string(direct_cos_alpha)) + "\n";
-    outputFile_txt << std::to_string(reflected_max_time)) + "\n";
-    outputFile_txt << std::to_string(reflected_min_time)) + "\n";
-    outputFile_txt << std::to_string(reflected_cos_alpha)) + "\n";
+    outputFile_txt << std::to_string(direct_max_time) + "\n";
+    outputFile_txt << std::to_string(direct_min_time) + "\n";
+    outputFile_txt << std::to_string(direct_cos_alpha) + "\n";
+    outputFile_txt << std::to_string(reflected_max_time) + "\n";
+    outputFile_txt << std::to_string(reflected_min_time) + "\n";
+    outputFile_txt << std::to_string(reflected_cos_alpha) + "\n";
 
     std::cout << "Min direct time: " << direct_min_time << std::endl;
     std::cout << "Max direct time: " << direct_max_time << std::endl;
