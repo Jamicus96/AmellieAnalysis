@@ -592,12 +592,12 @@ int OptimiseDivideAndConquer(std::string inputFile, int nbins, bool verbose, boo
     }
 
     // get points
-    double x_a = finalPoints.at(0);
-    double x_b = finalPoints.at(1);
-    double x_c = finalPoints.at(2);
-    double y_a = finalPoints.at(3);
-    double y_b = finalPoints.at(4);
-    double y_c = finalPoints.at(5);
+    double x_a = fixedPoints.at(0);
+    double x_b = fixedPoints.at(1);
+    double x_c = fixedPoints.at(2);
+    double y_a = fixedPoints.at(3);
+    double y_b = fixedPoints.at(4);
+    double y_c = fixedPoints.at(5);
 
     double direct_max_time = hNoEffectPaths->ProjectionY()->GetXaxis()->GetBinCenter(hNoEffectPaths->ProjectionY()->GetMaximumBin()) + 10;
     double direct_min_time = hNoEffectPaths->ProjectionY()->GetXaxis()->GetBinCenter(hNoEffectPaths->ProjectionY()->GetMaximumBin()) - 10;
@@ -1216,7 +1216,7 @@ std::vector<double> GetBestFOM(std::vector<double> FOMs, std::vector<double> poi
  * @param hOtherScatterPaths Original histogram.
  * @return std::vector<TH2F*> 
  */
-std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F *hReEmittedPaths, TH2F *hAllPaths, TH2F *hNoisePaths, TH2F *hSingleScatterPaths, TH2F *hOtherPaths, TH2F *hNoEffectPaths, TH2F *hNearReflectPaths, TH2F *hRopesPaths, TH2F *hPMTReflectionPaths, TH2F *hExtWaterScatterPaths, TH2F *hInnerAvReflectPaths, TH2F *hMultipleEffectPaths, TH2F *hAVPipesPaths, TH2F *hAcrylicPaths, TH2F *hOtherScatterPaths, std::ofstream outputFile_txt){
+std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F *hReEmittedPaths, TH2F *hAllPaths, TH2F *hNoisePaths, TH2F *hSingleScatterPaths, TH2F *hOtherPaths, TH2F *hNoEffectPaths, TH2F *hNearReflectPaths, TH2F *hRopesPaths, TH2F *hPMTReflectionPaths, TH2F *hExtWaterScatterPaths, TH2F *hInnerAvReflectPaths, TH2F *hMultipleEffectPaths, TH2F *hAVPipesPaths, TH2F *hAcrylicPaths, TH2F *hOtherScatterPaths, std::ofstream saveroot_txt){
 
     //FIXME: pass in vector of hists?
 
@@ -1450,8 +1450,6 @@ std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F 
     outputHists.push_back(hReflectedCutAVPipesPaths);
     outputHists.push_back(hReflectedCutAcrylicPaths);
     outputHists.push_back(hReflectedCutOtherScatterPaths);
-    rootfile->Write();
-    rootfile->Close();
 
     return outputHists;
 }
