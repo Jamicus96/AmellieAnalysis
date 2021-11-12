@@ -712,10 +712,13 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
         // Find maxima
         TH1D *hAllPaths_y = hAllPaths->ProjectionY();
         TH1D *hAllPaths_x = hAllPaths->ProjectionX();
+        hAllPaths_y->SetName("AllPaths_y_proj");
+        hAllPaths_x->SetName("AllPaths_x_proj");
         double direct_max_time = hAllPaths_y->GetXaxis()->GetBinCenter(hAllPaths_y->GetMaximumBin());
         double direct_max_cosTheta = hAllPaths_x->GetXaxis()->GetBinCenter(hAllPaths_x->GetMaximumBin());
 
         TH2F *right_half_hist = (TH2F*)hAllPaths->Clone();
+        right_half_hist->SetName("reflected_AllPaths");
         for(int x=1; x<right_half_hist->GetNbinsX()+1; x++){ //loop over histogram bins
             if(right_half_hist->GetXaxis()->GetBinCenter(x) <= 0.8) {
                 for(int y=1; y<right_half_hist->GetNbinsY()+1; y++){ //loop over histogram bins
@@ -725,6 +728,8 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
         }
         TH1D *reflected_max_time_y = right_half_hist->ProjectionY();
         TH1D *reflected_max_time_x = right_half_hist->ProjectionX();
+        reflected_max_time_y->SetName("reflected_AllPaths_y_proj");
+        reflected_max_time_x->SetName("reflected_AllPaths_x_proj");
         double reflected_max_time = reflected_max_time_y->GetXaxis()->GetBinCenter(reflected_max_time_y->GetMaximumBin());
         double reflected_max_cosTheta = reflected_max_time_x->GetXaxis()->GetBinCenter(reflected_max_time_x->GetMaximumBin());
 
