@@ -710,8 +710,8 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
         hReflectedCutPmtResTimeVsCosTheta->Write();
 
         // Find maxima
-        TH1F *hAllPaths_y = hAllPaths->ProjectionY();
-        TH1F *hAllPaths_x = hAllPaths->ProjectionX();
+        TH1D *hAllPaths_y = hAllPaths->ProjectionY();
+        TH1D *hAllPaths_x = hAllPaths->ProjectionX();
         double direct_max_time = hAllPaths_y->GetXaxis()->GetBinCenter(hAllPaths_y->GetMaximumBin());
         double direct_max_cosTheta = hAllPaths_x->GetXaxis()->GetBinCenter(hAllPaths_x->GetMaximumBin());
 
@@ -723,8 +723,8 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
                 }
             }
         }
-        TH1F *reflected_max_time_y = right_half_hist->ProjectionY();
-        TH1F *reflected_max_time_x = right_half_hist->ProjectionX();
+        TH1D *reflected_max_time_y = right_half_hist->ProjectionY();
+        TH1D *reflected_max_time_x = right_half_hist->ProjectionX();
         double reflected_max_time = reflected_max_time_y->GetXaxis()->GetBinCenter(reflected_max_time_y->GetMaximumBin());
         double reflected_max_cosTheta = reflected_max_time_x->GetXaxis()->GetBinCenter(reflected_max_time_x->GetMaximumBin());
 
