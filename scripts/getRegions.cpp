@@ -1326,7 +1326,7 @@ std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F 
 
     // Print to Regions lims file (append)
     std::ofstream outputFile_txt;
-    outputFile_txt.open(saveroot_txt.c_str(), std::ios::app);
+    outputFile_txt.open(saveroot_txt, std::ios::app);
     outputFile_txt << std::to_string(direct_max_time) + "\n";
     outputFile_txt << std::to_string(direct_min_time) + "\n";
     outputFile_txt << std::to_string(direct_cos_alpha) + "\n";
