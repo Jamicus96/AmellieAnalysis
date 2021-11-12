@@ -714,8 +714,12 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
         TH1D *hAllPaths_x = hAllPaths->ProjectionX();
         hAllPaths_y->SetName("AllPaths_y_proj");
         hAllPaths_x->SetName("AllPaths_x_proj");
-        double direct_max_time = hAllPaths_y->GetXaxis()->GetBinCenter(hAllPaths_y->GetMaximumBin());
+        double direct_max_time = hAllPaths_y->GetYaxis()->GetBinCenter(hAllPaths_y->GetMaximumBin());
         double direct_max_cosTheta = hAllPaths_x->GetXaxis()->GetBinCenter(hAllPaths_x->GetMaximumBin());
+        // int x, y, z;
+        // hAllPaths->GetMaximumBin(x, y, z);
+        // double direct_max_time = hAllPaths->GetBinCenter(x, y, z);
+        // double direct_max_cosTheta = hAllPaths->GetBinCenter(x, y, z);
 
         TH2F *right_half_hist = (TH2F*)hAllPaths->Clone();
         right_half_hist->SetName("reflected_AllPaths");
@@ -730,7 +734,7 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
         TH1D *reflected_max_time_x = right_half_hist->ProjectionX();
         reflected_max_time_y->SetName("reflected_AllPaths_y_proj");
         reflected_max_time_x->SetName("reflected_AllPaths_x_proj");
-        double reflected_max_time = reflected_max_time_y->GetXaxis()->GetBinCenter(reflected_max_time_y->GetMaximumBin());
+        double reflected_max_time = reflected_max_time_y->GetYaxis()->GetBinCenter(reflected_max_time_y->GetMaximumBin());
         double reflected_max_cosTheta = reflected_max_time_x->GetXaxis()->GetBinCenter(reflected_max_time_x->GetMaximumBin());
 
         // Draw box cuts and direct/reflected beam maxima on resthit vs costheta hist
