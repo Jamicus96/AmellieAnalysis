@@ -10,13 +10,14 @@ Create plots of the phase space showing the relationship between different param
 #include <iostream>
 #include <fstream>
 #include <chrono>
+#include <vector>
 
 int CalculateRegions(std::string inputFile, int nbins);
 int OptimiseDivideAndConquer(std::string inputFile, int nbins, bool verbose, bool debug, bool extraInfo, std::string signal_param);
 std::vector<double> GetThreePoints(double bestPoint, double worstPoint, std::vector<double> originalPoints);
 std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixedPoints, int numVar, TH2F *allPathsHist, TH2F *reEmittedHist, TH2F *scatteredHist, std::string signal);
 std::vector<double> GetBestFOM(std::vector<double> FOMs, std::vector<double> points);
-std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F *hReEmittedPaths, TH2F *hAllPaths, TH2F *hNoisePaths, TH2F *hSingleScatterPaths, TH2F *hOtherPaths, TH2F *hNoEffectPaths, TH2F *hNearReflectPaths, TH2F *hRopesPaths, TH2F *hPMTReflectionPaths, TH2F *hExtWaterScatterPaths, TH2F *hInnerAvReflectPaths, TH2F *hMultipleEffectPaths, TH2F *hAVPipesPaths, TH2F *hAcrylicPaths, TH2F *hOtherScatterPaths, std::ofstream outputFile_txt);
+std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F *hReEmittedPaths, TH2F *hAllPaths, TH2F *hNoisePaths, TH2F *hSingleScatterPaths, TH2F *hOtherPaths, TH2F *hNoEffectPaths, TH2F *hNearReflectPaths, TH2F *hRopesPaths, TH2F *hPMTReflectionPaths, TH2F *hExtWaterScatterPaths, TH2F *hInnerAvReflectPaths, TH2F *hMultipleEffectPaths, TH2F *hAVPipesPaths, TH2F *hAcrylicPaths, TH2F *hOtherScatterPaths, std::ofstream outputFile_txt, TFile *rootfile);
 std::vector<double> CheckPoints(std::vector<double> points, std::vector<double> fixedPoints, int numVar);
 
 int main(int argc, char** argv){
@@ -533,13 +534,14 @@ int OptimiseDivideAndConquer(std::string inputFile, int nbins, bool verbose, boo
     if(verbose) std::cout << "    y_c: " << fixedPoints.at(5) << std::endl;
     if(verbose) std::cout << "There were " << numMainLoopIterations << " iterations of the main loop" << std::endl;
 
-    std::vector<TH2F*> regionSelectedHists = GetRegionSelectedHists(fixedPoints, hReEmittedPaths, hAllPaths, hNoisePaths, hSingleScatterPaths, hOtherPaths, hNoEffectPaths, hNearReflectPaths, hRopesPaths, hPMTReflectionPaths, hExtWaterScatterPaths, hInnerAvReflectPaths, hMultipleEffectPaths, hAVPipesPaths, hAcrylicPaths, hOtherScatterPaths, outputFile_txt);
-    outputFile_txt.close();
     // get file name from path+filename string
     std::size_t botDirPos = inputFile.find_last_of("/");
     std::string filename = inputFile.substr(botDirPos+1, inputFile.length());
     std::string saveroot = "region_selected_hists_" + signal_param + "_" + filename;
     TFile *rootfile = new TFile(saveroot.c_str(),"RECREATE");
+
+    std::vector<TH2F*> regionSelectedHists = GetRegionSelectedHists(fixedPoints, hReEmittedPaths, hAllPaths, hNoisePaths, hSingleScatterPaths, hOtherPaths, hNoEffectPaths, hNearReflectPaths, hRopesPaths, hPMTReflectionPaths, hExtWaterScatterPaths, hInnerAvReflectPaths, hMultipleEffectPaths, hAVPipesPaths, hAcrylicPaths, hOtherScatterPaths, outputFile_txt, rootfile);
+    outputFile_txt.close();
     
     rootfile->cd();
     for(int i=0; i<regionSelectedHists.size();i++){
@@ -1394,6 +1396,50 @@ std::vector<TH2F*> GetRegionSelectedHists(std::vector<double> finalPoints, TH2F 
     outputHists.push_back(hReflectedCutAVPipesPaths);
     outputHists.push_back(hReflectedCutAcrylicPaths);
     outputHists.push_back(hReflectedCutOtherScatterPaths);
+
+    // get points
+    double x_a = finalPoints.at(0);
+    double x_b = finalPoints.at(1);
+    double x_c = finalPoints.at(2);
+    double y_a = finalPoints.at(3);
+    double y_b = finalPoints.at(4);
+    double y_c = finalPoints.at(5);
+
+    // Draw box cuts on resthit vs costheta hist
+    TCanvas *c1 = new TCanvas("cuts","cuts");  //Create output canvas to be saved in output file
+    TH2F *h = (TH2F*)hAllPaths->Clone();
+    h->Draw("colz");  // Draw histogram
+
+    // create lines
+    std::vector<TLine> lines;
+    // region
+    lines.push_back(TLine(x_a, y_a, x_b, y_b));
+    lines.push_back(TLine(x_a, y_a, x_c, y_c));
+    lines.push_back(TLine(x_c, y_c, x_b, y_b));
+    // direct box
+    lines.push_back(TLine(direct_cos_alpha, direct_min_time, direct_cos_alpha, direct_max_time));
+    lines.push_back(TLine(-1, direct_min_time, -1, direct_max_time));
+    lines.push_back(TLine(-1, direct_max_time, direct_cos_alpha, direct_max_time));
+    lines.push_back(TLine(-1, direct_min_time, direct_cos_alpha, direct_min_time));
+    // reflected box
+    lines.push_back(TLine(reflected_cos_alpha, reflected_min_time, reflected_cos_alpha, reflected_max_time));
+    lines.push_back(TLine(1, reflected_min_time, 1, reflected_max_time));
+    lines.push_back(TLine(1, reflected_max_time, reflected_cos_alpha, reflected_max_time));
+    lines.push_back(TLine(1, reflected_min_time, reflected_cos_alpha, reflected_min_time));
+
+    // draw lines
+    for(int i=0; i<lines.size(); ++i){
+        lines[i].SetLineColor(kBlack);
+        lines[i].Draw("SAME");
+    }
+
+    // Write canvas to root file
+    rootfile->cd();
+    c1->Write();  
+    delete c1;
+
+    rootfile->Write();
+    rootfile->Close();
 
     return outputHists;
 }

@@ -617,6 +617,76 @@ int make_region_cut(std::string tracked_file, double x_a, double x_b, double x_c
         hReflectedCutAVPipesPaths->Write();
         hReflectedCutAcrylicPaths->Write();
         hReflectedCutOtherScatterPaths->Write();
+
+        // Find maxima
+        // TH1D *hAllPaths_y = hAllPaths->ProjectionY();
+        // TH1D *hAllPaths_x = hAllPaths->ProjectionX();
+        // hAllPaths_y->SetName("AllPaths_y_proj");
+        // hAllPaths_x->SetName("AllPaths_x_proj");
+        // double direct_max_time = hAllPaths_y->GetYaxis()->GetBinCenter(hAllPaths_y->GetMaximumBin());
+        // double direct_max_cosTheta = hAllPaths_x->GetXaxis()->GetBinCenter(hAllPaths_x->GetMaximumBin());
+        int x, y, z;
+        hAllPaths->GetMaximumBin(x, y, z);
+        double direct_max_time = hAllPaths->GetYaxis()->GetBinCenter(y);
+        double direct_max_cosTheta = hAllPaths->GetXaxis()->GetBinCenter(x);
+
+        TH2F *right_half_hist = (TH2F*)hAllPaths->Clone();
+        right_half_hist->SetName("reflected_AllPaths");
+        for(int x=1; x<right_half_hist->GetNbinsX()+1; x++){ //loop over histogram bins
+            if(right_half_hist->GetXaxis()->GetBinCenter(x) <= 0.8) {
+                for(int y=1; y<right_half_hist->GetNbinsY()+1; y++){ //loop over histogram bins
+                    right_half_hist->SetBinContent(x,y,0);  // Set left hand side of this hist to zero, to eliminate diret beam spot
+                }
+            }
+        }
+        // TH1D *reflected_max_time_y = right_half_hist->ProjectionY();
+        // TH1D *reflected_max_time_x = right_half_hist->ProjectionX();
+        // reflected_max_time_y->SetName("reflected_AllPaths_y_proj");
+        // reflected_max_time_x->SetName("reflected_AllPaths_x_proj");
+        // double reflected_max_time = reflected_max_time_y->GetYaxis()->GetBinCenter(reflected_max_time_y->GetMaximumBin());
+        // double reflected_max_cosTheta = reflected_max_time_x->GetXaxis()->GetBinCenter(reflected_max_time_x->GetMaximumBin());
+        right_half_hist->GetMaximumBin(x, y, z);
+        double reflected_max_time = right_half_hist->GetYaxis()->GetBinCenter(y);
+        double reflected_max_cosTheta = right_half_hist->GetXaxis()->GetBinCenter(x);
+
+        // Draw box cuts and direct/reflected beam maxima on resthit vs costheta hist
+        TCanvas *c1 = new TCanvas("cuts","cuts");  //Create output canvas to be saved in output file
+        TH2F *h = (TH2F*)hAllPaths->Clone();
+        h->Draw("colz");  // Draw histogram
+
+        // create lines
+        std::vector<TLine> lines;
+        // region
+        lines.push_back(TLine(x_a, y_a, x_b, y_b));
+        lines.push_back(TLine(x_a, y_a, x_c, y_c));
+        lines.push_back(TLine(x_c, y_c, x_b, y_b));
+        // direct box
+        lines.push_back(TLine(min_angle_direct_beam_spot, min_time_direct_beam_spot, min_angle_direct_beam_spot, max_time_direct_beam_spot));
+        lines.push_back(TLine(-1, min_time_direct_beam_spot, -1, max_time_direct_beam_spot));
+        lines.push_back(TLine(-1, max_time_direct_beam_spot, min_angle_direct_beam_spot, max_time_direct_beam_spot));
+        lines.push_back(TLine(-1, min_time_direct_beam_spot, min_angle_direct_beam_spot, min_time_direct_beam_spot));
+        // reflected box
+        lines.push_back(TLine(min_angle_reflected_beam_spot, min_time_reflected_beam_spot, min_angle_reflected_beam_spot, max_time_reflected_beam_spot));
+        lines.push_back(TLine(1, min_time_reflected_beam_spot, 1, max_time_reflected_beam_spot));
+        lines.push_back(TLine(1, max_time_reflected_beam_spot, min_angle_reflected_beam_spot, max_time_reflected_beam_spot));
+        lines.push_back(TLine(1, min_time_reflected_beam_spot, min_angle_reflected_beam_spot, min_time_reflected_beam_spot));
+        // direct peak
+        lines.push_back(TLine(direct_max_cosTheta - 0.025, direct_max_time, direct_max_cosTheta + 0.025, direct_max_time));
+        lines.push_back(TLine(direct_max_cosTheta, direct_max_time - 5.0, direct_max_cosTheta, direct_max_time + 5.0));
+        // reflected peak
+        lines.push_back(TLine(reflected_max_cosTheta - 0.025, reflected_max_time, reflected_max_cosTheta + 0.025, reflected_max_time));
+        lines.push_back(TLine(reflected_max_cosTheta, reflected_max_time - 5.0, reflected_max_cosTheta, reflected_max_time + 5.0));
+
+        // draw lines
+        for(int i=0; i<lines.size(); ++i){
+            lines[i].SetLineColor(kBlack);
+            lines[i].Draw("SAME");
+        }
+
+        // Write canvas to root file
+        c1->Write();  
+        delete c1;
+
         rootfile->Write();
         rootfile->Close();
 
