@@ -11,6 +11,8 @@ Create plots of the phase space showing the relationship between different param
 #include <fstream>
 #include <chrono>
 #include <vector>
+#include <TCanvas.h>
+#include <TLine.h>
 
 int CalculateRegions(std::string inputFile, int nbins);
 int OptimiseDivideAndConquer(std::string inputFile, int nbins, bool verbose, bool debug, bool extraInfo, std::string signal_param);
