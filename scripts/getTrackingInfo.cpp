@@ -1015,7 +1015,7 @@ int GetLightPaths(std::string file, std::string fibre, std::string data_type){
     // Initialise variables and histograms
     int pmtcount = 0;
     double locality = 10.0; //lpc sensitivity
-    double energy = RAT::util::WavelengthToEnergy(403E-6); //FIXME: could be input argument as easy to forget
+    double energy = RAT::util::WavelengthToEnergy(503E-6); //FIXME: could be input argument as easy to forget
 
     // get file name from path+filename string
     std::size_t botDirPos = file.find_last_of("/");
