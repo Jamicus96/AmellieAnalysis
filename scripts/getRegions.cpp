@@ -1140,9 +1140,9 @@ std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixe
  */
 std::vector<double> GetBestFOM(std::vector<double> FOMs, std::vector<double> points){
     std::vector<double> output;
-    if(FOMs.at(0) > FOMs.at(1) and FOMs.at(0) > FOMs.at(2)){ //left side best point
+    if(FOMs.at(0) >= FOMs.at(1) and FOMs.at(0) >= FOMs.at(2)){ //left side best point
         output.push_back(points.at(0));
-        if(FOMs.at(1) > FOMs.at(2)){ //right point worst
+        if(FOMs.at(1) >= FOMs.at(2)){ //right point worst
             output.push_back(points.at(2));
             output.push_back(FOMs.at(0));
             output.push_back(FOMs.at(2));
@@ -1153,9 +1153,9 @@ std::vector<double> GetBestFOM(std::vector<double> FOMs, std::vector<double> poi
             output.push_back(FOMs.at(1));
         }
     }
-    else if(FOMs.at(1) > FOMs.at(0) and FOMs.at(1) > FOMs.at(2)){ //middle best point
+    else if(FOMs.at(1) >= FOMs.at(0) and FOMs.at(1) >= FOMs.at(2)){ //middle best point
         output.push_back(points.at(1));
-        if(FOMs.at(0) > FOMs.at(2)){ //right point worst
+        if(FOMs.at(0) >= FOMs.at(2)){ //right point worst
             output.push_back(points.at(2));
             output.push_back(FOMs.at(1));
             output.push_back(FOMs.at(2));
@@ -1166,9 +1166,9 @@ std::vector<double> GetBestFOM(std::vector<double> FOMs, std::vector<double> poi
             output.push_back(FOMs.at(0));
         }
     }
-    else if(FOMs.at(2) > FOMs.at(1) and FOMs.at(2) > FOMs.at(0)){ //right side best point
+    else if(FOMs.at(2) >= FOMs.at(1) and FOMs.at(2) >= FOMs.at(0)){ //right side best point
         output.push_back(points.at(2));
-        if(FOMs.at(1) > FOMs.at(0)){ //left point worst
+        if(FOMs.at(1) >= FOMs.at(0)){ //left point worst
             output.push_back(points.at(0));
             output.push_back(FOMs.at(2));
             output.push_back(FOMs.at(0));
