@@ -604,12 +604,13 @@ int OptimiseDivideAndConquer(std::string inputFile, int nbins, std::string fibre
     double direct_max_time = hNoEffectPaths->ProjectionY()->GetXaxis()->GetBinCenter(hNoEffectPaths->ProjectionY()->GetMaximumBin()) + 10;
     double direct_min_time = hNoEffectPaths->ProjectionY()->GetXaxis()->GetBinCenter(hNoEffectPaths->ProjectionY()->GetMaximumBin()) - 10;
     //FIXME: don't hardcode this:
+    double direct_cos_alpha;
     if (fibre == "FA089") {  // 10deg off-axis
-        double direct_cos_alpha = -0.85; 
+        direct_cos_alpha = -0.85; 
     } else if (fibre == "FA173" or fibre == "FA150" or fibre == "FA093") {  // 20deg off-axis
-        double direct_cos_alpha = -0.6;
+        direct_cos_alpha = -0.6;
     } else {  // on-axis
-        double direct_cos_alpha = -0.9;
+        direct_cos_alpha = -0.9;
     }
 
     double reflected_max_time = hNearReflectPaths->ProjectionY()->GetXaxis()->GetBinCenter(hNearReflectPaths->ProjectionY()->GetMaximumBin()) + 10;
