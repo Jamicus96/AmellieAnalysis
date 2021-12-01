@@ -15,7 +15,7 @@ Create plots of the phase space showing the relationship between different param
 #include <TLine.h>
 
 int CalculateRegions(std::string inputFile, int nbins);
-int OptimiseDivideAndConquer(std::string inputFile, int nbins, bool verbose, bool debug, bool extraInfo, std::string signal_param);
+int OptimiseDivideAndConquer(std::string inputFile, int nbins, std::string fibre, bool verbose, bool debug, bool extraInfo, std::string signal_param);
 std::vector<double> GetThreePoints(double bestPoint, double worstPoint, std::vector<double> originalPoints);
 std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixedPoints, int numVar, TH2F *allPathsHist, TH2F *reEmittedHist, TH2F *scatteredHist, std::string signal);
 std::vector<double> GetBestFOM(std::vector<double> FOMs, std::vector<double> points);
@@ -25,12 +25,13 @@ std::vector<double> CheckPoints(std::vector<double> points, std::vector<double> 
 int main(int argc, char** argv){
     std::string file = argv[1];
     int nbins = std::stoi(argv[2]);
-    bool verbose = std::stoi(argv[3]);
-    bool debug = std::stoi(argv[4]);
-    bool extraInfo = std::stoi(argv[5]);
-    std::string signal = argv[6];
+    std::string fibre = argv[3];
+    bool verbose = std::stoi(argv[4]);
+    bool debug = std::stoi(argv[5]);
+    bool extraInfo = std::stoi(argv[6]);
+    std::string signal = argv[7];
     auto t1 = std::chrono::high_resolution_clock::now();
-    int status = OptimiseDivideAndConquer(file, nbins, verbose, debug, extraInfo, signal); 
+    int status = OptimiseDivideAndConquer(file, nbins, fibre, verbose, debug, extraInfo, signal); 
     auto t2 = std::chrono::high_resolution_clock::now();
 
     std::cout << "Script took " << std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count() / 1E6 << " s to execute" << std::endl;
@@ -39,7 +40,7 @@ int main(int argc, char** argv){
 }
 
 /**
- * @brief Finds Triangular region with best (highest) FOM (attenuated / sqrt(total)) via a divide and conquer method
+ * @brief Finds Triangular region with best (highest) FOM (attenuated / total) via a divide and conquer method
  * Start with p=(min, mid, max) for each point (x and y coordinates), as well as initial fixed points that are the largest
  * right-angle triangle to start with. Find FOM for triangle by replacing each point with each option in p (one at a time),
  * while keeping the other fixed points temprarily fixed. Then replace the associated fixed point with whichever of min or
@@ -48,13 +49,14 @@ int main(int argc, char** argv){
  * 
  * @param inputFile Root file with original histograms with all the data.
  * @param nbins Number of bins (resolution) that we wish to use (max is capped at number of bins of original hists).
+ * @param fibre Fibre used to determine its angle offset and thus the direct beam spot angle.
  * @param verbose Print extra info.
  * @param debug Print extra info.
  * @param extraInfo Print extra info.
  * @param signal_param signal = reemitted, scattered or attenuated. The signal we are trying to optimise for.
  * @return int 
  */
-int OptimiseDivideAndConquer(std::string inputFile, int nbins, bool verbose, bool debug, bool extraInfo, std::string signal_param){
+int OptimiseDivideAndConquer(std::string inputFile, int nbins, std::string fibre, bool verbose, bool debug, bool extraInfo, std::string signal_param){
 
     auto timeStart = std::chrono::high_resolution_clock::now();
 
@@ -601,7 +603,14 @@ int OptimiseDivideAndConquer(std::string inputFile, int nbins, bool verbose, boo
 
     double direct_max_time = hNoEffectPaths->ProjectionY()->GetXaxis()->GetBinCenter(hNoEffectPaths->ProjectionY()->GetMaximumBin()) + 10;
     double direct_min_time = hNoEffectPaths->ProjectionY()->GetXaxis()->GetBinCenter(hNoEffectPaths->ProjectionY()->GetMaximumBin()) - 10;
-    double direct_cos_alpha = -0.9; //FIXME: don't hardcode this
+    //FIXME: don't hardcode this:
+    if (fibre == "FA089") {  // 10deg off-axis
+        double direct_cos_alpha = -0.85; 
+    } else if (fibre == "FA173" or fibre == "FA150" or fibre == "FA093") {  // 20deg off-axis
+        double direct_cos_alpha = -0.6;
+    } else {  // on-axis
+        double direct_cos_alpha = -0.9;
+    }
 
     double reflected_max_time = hNearReflectPaths->ProjectionY()->GetXaxis()->GetBinCenter(hNearReflectPaths->ProjectionY()->GetMaximumBin()) + 10;
     double reflected_min_time = hNearReflectPaths->ProjectionY()->GetXaxis()->GetBinCenter(hNearReflectPaths->ProjectionY()->GetMaximumBin()) - 10;
@@ -1121,9 +1130,9 @@ std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixe
     double signal_ratio1 = 0;
     double signal_ratio2 = 0;
     double signal_ratio3 = 0;
-    if(countReEmitted1 > 0 and countTotal1 > 0) signal_ratio1 = countReEmitted1 / std::sqrt(countTotal1);
-    if(countReEmitted2 > 0 and countTotal2 > 0) signal_ratio2 = countReEmitted2 / std::sqrt(countTotal2);
-    if(countReEmitted3 > 0 and countTotal3 > 0) signal_ratio3 = countReEmitted3 / std::sqrt(countTotal3);
+    if(countReEmitted1 > 0 and countTotal1 > 0) signal_ratio1 = countReEmitted1 / countTotal1;
+    if(countReEmitted2 > 0 and countTotal2 > 0) signal_ratio2 = countReEmitted2 / countTotal2;
+    if(countReEmitted3 > 0 and countTotal3 > 0) signal_ratio3 = countReEmitted3 / countTotal3;
 
     std::vector<double> outputFOMs = {signal_ratio1, signal_ratio2, signal_ratio3};
 
