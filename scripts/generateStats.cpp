@@ -254,26 +254,32 @@ int make_region_cut(std::string tracked_file, triangle Tri,
     double yBinCenter;
     bool direct_Xcut;
     bool reflected_Xcut;
+    bool inside_direct;
+    bool inside_reflected;
     for (int x=0; x<nBinsX+1; x++) {
         xBinCenter = hists_lists.Tracking_Hists().at(0)->GetXaxis()->GetBinCenter(x);
         if (xBinCenter >= min_angle_direct_beam_spot) {direct_Xcut = true;} else {direct_Xcut = false;}
         if (xBinCenter <= min_angle_reflected_beam_spot) {reflected_Xcut = true;} else {reflected_Xcut = false;}
         for (int y=0; y<nBinsY+1; y++) {
             yBinCenter = hists_lists.Tracking_Hists().at(0)->GetYaxis()->GetBinCenter(y);
+            inside_direct = true;
+            inside_reflected = true;
             // Check if bin is in direct beam spot
             if (direct_Xcut or yBinCenter <= min_time_direct_beam_spot or yBinCenter >= max_time_direct_beam_spot) {
                 for (int i = 0; i < 15; ++i) {
                     hists_lists.Direct_Hists().at(i)->SetBinContent(x, y, 0);
+                    inside_direct = false;
                 }
             }
             // Check if bin is in direct beam spot
-            else if (reflected_Xcut or yBinCenter <= min_time_reflected_beam_spot or yBinCenter >= max_time_reflected_beam_spot) {
+            if (reflected_Xcut or yBinCenter <= min_time_reflected_beam_spot or yBinCenter >= max_time_reflected_beam_spot) {
                 for (int i = 0; i < 15; ++i) {
                     hists_lists.Reflected_Hists().at(i)->SetBinContent(x, y, 0);
+                    inside_reflected = false;
                 }
             }
             // Check if bin is within triangle region
-            else if (!(Tri.check_point_inside_triangle(xBinCenter, yBinCenter))) {
+            if (!(Tri.check_point_inside_triangle(xBinCenter, yBinCenter)) or inside_direct or inside_reflected) {
                 for (int i = 0; i < 15; ++i) {
                     hists_lists.Region_Hists().at(i)->SetBinContent(x, y, 0);
                 }

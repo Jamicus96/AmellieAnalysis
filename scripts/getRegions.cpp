@@ -427,8 +427,6 @@ std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixe
                             fixedPoints.at(4), fixedPoints.at(5));
 
     // Replace the appropriate point in the triangle with each point in points and see if the bin falls in the triangle.
-    bool in_direct;
-    bool in_reflected;
     for (int i = 0; i < 3; ++i){
         Tri[numVar] = points.at(i);
         for(int x=1; x<reEmittedHist->GetNbinsX()+1; x++){ //loop over histogram bins
@@ -436,29 +434,22 @@ std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixe
             for(int y=1; y<reEmittedHist->GetNbinsY()+1; y++){
                 double yBinCenter = reEmittedHist->GetYaxis()->GetBinCenter(y);
 
-                // Check if point is inside direct of reflected region (rectangles). If so, exclude from triangle region
-                if(xBinCenter > direct_cos_alpha or yBinCenter >= direct_max_time or yBinCenter <= direct_min_time){
-                    in_direct = true;
-                    in_reflected = false;
-                } else if(xBinCenter < reflected_cos_alpha or yBinCenter >= reflected_max_time or yBinCenter <= reflected_min_time){
-                    in_direct = false;
-                    in_reflected = true;
-                } else {
-                    in_direct = false;
-                    in_reflected = false;
-                }
-
-                if(Tri.check_point_inside_triangle(xBinCenter, yBinCenter) and !in_direct and !in_reflected){
-                    if(signal == "reemitted"){
-                        countReEmitted[i] += reEmittedHist->GetBinContent(x,y);
+                // Check if point is outside direct and reflected regions (rectangles). want to exclude these regions from triangle
+                if (xBinCenter > direct_cos_alpha or yBinCenter >= direct_max_time or yBinCenter <= direct_min_time) {
+                    if (xBinCenter < reflected_cos_alpha or yBinCenter >= reflected_max_time or yBinCenter <= reflected_min_time) {
+                        if(Tri.check_point_inside_triangle(xBinCenter, yBinCenter) and !in_direct and !in_reflected){
+                            if(signal == "reemitted"){
+                                countReEmitted[i] += reEmittedHist->GetBinContent(x,y);
+                            }
+                            else if(signal == "scattered"){
+                                countReEmitted[i] += scatteredHist->GetBinContent(x,y);
+                            }
+                            else if(signal == "attenuated"){
+                                countReEmitted[i] += scatteredHist->GetBinContent(x,y) + reEmittedHist->GetBinContent(x,y);
+                            }
+                            countTotal[i] += allPathsHist->GetBinContent(x,y);
+                        }
                     }
-                    else if(signal == "scattered"){
-                        countReEmitted[i] += scatteredHist->GetBinContent(x,y);
-                    }
-                    else if(signal == "attenuated"){
-                        countReEmitted[i] += scatteredHist->GetBinContent(x,y) + reEmittedHist->GetBinContent(x,y);
-                    }
-                    countTotal[i] += allPathsHist->GetBinContent(x,y);
                 }
             }
         }
@@ -587,19 +578,27 @@ HistList GetRegionSelectedHists(std::vector<double> finalPoints, HistList hists_
     triangle Tri = triangle(finalPoints.at(0), finalPoints.at(1), finalPoints.at(2), finalPoints.at(3),
                             finalPoints.at(4), finalPoints.at(5));
 
+    bool inside_direct;
+    bool inside_reflected;
     for(int x=1; x<hists_lists.Tracking_Hists().at(0)->GetNbinsX()+1; x++){ //loop over histogram bins
         double xBinCenter = hists_lists.Tracking_Hists().at(0)->GetXaxis()->GetBinCenter(x);
         for(int y=1; y<hists_lists.Tracking_Hists().at(0)->GetNbinsY()+1; y++){ //loop over histogram bins
             double yBinCenter = hists_lists.Tracking_Hists().at(0)->GetYaxis()->GetBinCenter(y);
+            inside_direct = true;
+            inside_reflected = true;
             if (xBinCenter > direct_cos_alpha or yBinCenter >= direct_max_time or yBinCenter <= direct_min_time) {
                 for (int i = 0; i < 15; ++i) {
                     hists_lists.Direct_Hists().at(i)->SetBinContent(x,y,0);
+                    inside_direct = false;
                 }
-            } else if (xBinCenter < reflected_cos_alpha or yBinCenter >= reflected_max_time or yBinCenter <= reflected_min_time) {
+            } 
+            if (xBinCenter < reflected_cos_alpha or yBinCenter >= reflected_max_time or yBinCenter <= reflected_min_time) {
                 for (int i = 0; i < 15; ++i) {
                     hists_lists.Reflected_Hists().at(i)->SetBinContent(x,y,0);
+                    inside_reflected = false;
                 }
-            } else if (!(Tri.check_point_inside_triangle(xBinCenter, yBinCenter))){
+            }
+            if (!(Tri.check_point_inside_triangle(xBinCenter, yBinCenter)) or inside_direct or inside_reflected){
                 for (int i = 0; i < 15; ++i) {
                     hists_lists.Region_Hists().at(i)->SetBinContent(x,y,0);
                 }
