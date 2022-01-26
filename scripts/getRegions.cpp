@@ -406,8 +406,8 @@ std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixe
     double countReEmitted[3] = {0, 0, 0};
     double countTotal[3] = {0, 0, 0};
 
-    double direct_max_time = allPathsHist->ProjectionY()->GetXaxis()->GetBinCenter(hists_lists.Tracking_Hists().at(5)->ProjectionY()->GetMaximumBin()) + 10;  //hNoEffectPaths
-    double direct_min_time = allPathsHist->ProjectionY()->GetXaxis()->GetBinCenter(hists_lists.Tracking_Hists().at(5)->ProjectionY()->GetMaximumBin()) - 10;  //hNoEffectPaths
+    double direct_max_time = allPathsHist->ProjectionY()->GetXaxis()->GetBinCenter(allPathsHist->ProjectionY()->GetMaximumBin()) + 10;  //hNoEffectPaths
+    double direct_min_time = allPathsHist->ProjectionY()->GetXaxis()->GetBinCenter(allPathsHist->ProjectionY()->GetMaximumBin()) - 10;  //hNoEffectPaths
     //FIXME: don't hardcode this:
     double direct_cos_alpha;
     if (fibre == "FA089") {  // 10deg off-axis
@@ -418,8 +418,8 @@ std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixe
         direct_cos_alpha = -0.9;
     }
 
-    double reflected_max_time = allPathsHist->ProjectionY()->GetXaxis()->GetBinCenter(hists_lists.Tracking_Hists().at(5)->ProjectionY()->GetMaximumBin()) + 10;  //hNoEffectPaths
-    double reflected_min_time = allPathsHist->ProjectionY()->GetXaxis()->GetBinCenter(hists_lists.Tracking_Hists().at(5)->ProjectionY()->GetMaximumBin()) - 10;  //hNoEffectPaths
+    double reflected_max_time = allPathsHist->ProjectionY()->GetXaxis()->GetBinCenter(allPathsHist->ProjectionY()->GetMaximumBin()) + 10;  //hNoEffectPaths
+    double reflected_min_time = allPathsHist->ProjectionY()->GetXaxis()->GetBinCenter(allPathsHist->ProjectionY()->GetMaximumBin()) - 10;  //hNoEffectPaths
     double reflected_cos_alpha = 0.95; //FIXME: don't hardcode this
 
     // Create triangle with fixed points
