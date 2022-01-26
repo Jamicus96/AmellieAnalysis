@@ -437,7 +437,7 @@ std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixe
                 // Check if point is outside direct and reflected regions (rectangles). want to exclude these regions from triangle
                 if (xBinCenter > direct_cos_alpha or yBinCenter >= direct_max_time or yBinCenter <= direct_min_time) {
                     if (xBinCenter < reflected_cos_alpha or yBinCenter >= reflected_max_time or yBinCenter <= reflected_min_time) {
-                        if(Tri.check_point_inside_triangle(xBinCenter, yBinCenter) and !in_direct and !in_reflected){
+                        if(Tri.check_point_inside_triangle(xBinCenter, yBinCenter)){
                             if(signal == "reemitted"){
                                 countReEmitted[i] += reEmittedHist->GetBinContent(x,y);
                             }
