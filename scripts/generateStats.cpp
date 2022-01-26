@@ -260,12 +260,6 @@ int make_region_cut(std::string tracked_file, triangle Tri,
         if (xBinCenter <= min_angle_reflected_beam_spot) {reflected_Xcut = true;} else {reflected_Xcut = false;}
         for (int y=0; y<nBinsY+1; y++) {
             yBinCenter = hists_lists.Tracking_Hists().at(0)->GetYaxis()->GetBinCenter(y);
-            // Check if bin is within triangle region
-            if (!(Tri.check_point_inside_triangle(xBinCenter, yBinCenter))) {
-                for (int i = 0; i < 15; ++i) {
-                    hists_lists.Region_Hists().at(i)->SetBinContent(x, y, 0);
-                }
-            }
             // Check if bin is in direct beam spot
             if (direct_Xcut or yBinCenter <= min_time_direct_beam_spot or yBinCenter >= max_time_direct_beam_spot) {
                 for (int i = 0; i < 15; ++i) {
@@ -273,9 +267,15 @@ int make_region_cut(std::string tracked_file, triangle Tri,
                 }
             }
             // Check if bin is in direct beam spot
-            if (reflected_Xcut or yBinCenter <= min_time_reflected_beam_spot or yBinCenter >= max_time_reflected_beam_spot) {
+            else if (reflected_Xcut or yBinCenter <= min_time_reflected_beam_spot or yBinCenter >= max_time_reflected_beam_spot) {
                 for (int i = 0; i < 15; ++i) {
                     hists_lists.Reflected_Hists().at(i)->SetBinContent(x, y, 0);
+                }
+            }
+            // Check if bin is within triangle region
+            else if (!(Tri.check_point_inside_triangle(xBinCenter, yBinCenter))) {
+                for (int i = 0; i < 15; ++i) {
+                    hists_lists.Region_Hists().at(i)->SetBinContent(x, y, 0);
                 }
             }
         }

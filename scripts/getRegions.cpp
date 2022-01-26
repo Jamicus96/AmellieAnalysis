@@ -14,7 +14,7 @@ int CalculateRegions(std::string inputFile, int nbins);
 int OptimiseDivideAndConquer(std::string inputFile, int nbins, std::string fibre, bool verbose, bool debug, bool extraInfo, std::string signal_param);
 std::vector<double> GetThreePoints(double bestPoint, double worstPoint, std::vector<double> originalPoints);
 void DrawRegionLims(std::vector<double> fixedPoints, HistList hists_lists, std::string fibre);
-std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixedPoints, int numVar, TH2F *allPathsHist, TH2F *reEmittedHist, TH2F *scatteredHist, std::string signal);
+std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixedPoints, int numVar, TH2F *allPathsHist, TH2F *reEmittedHist, TH2F *scatteredHist, std::string signal, std::string fibre);
 std::vector<double> GetBestFOM(std::vector<double> FOMs, std::vector<double> points);
 HistList GetRegionSelectedHists(std::vector<double> finalPoints, HistList hists_lists, std::string fibre, std::string saveroot_txt);
 
@@ -165,7 +165,7 @@ int OptimiseDivideAndConquer(std::string inputFile, int nbins, std::string fibre
                     if(debug) std::cout << "Set up first " << point_names[i] << "_run points: " << points[i].at(0)
                                         << ", " << points[i].at(1) << ", " << points[i].at(2) << std::endl;
                 }
-                FOMs[i] = GetFOMs(points[i], fixedPoints, i, hists_lists.Tracking_Hists().at(1), hists_lists.Tracking_Hists().at(0), hists_lists.Tracking_Hists().at(3), signal_param);  //hAllPaths, hReEmittedPaths, hSingleScatterPaths
+                FOMs[i] = GetFOMs(points[i], fixedPoints, i, hists_lists.Tracking_Hists().at(1), hists_lists.Tracking_Hists().at(0), hists_lists.Tracking_Hists().at(3), signal_param, fibre);  //hAllPaths, hReEmittedPaths, hSingleScatterPaths
                 if(debug) std::cout << "Got FOMs " << FOMs[i].at(0) << ", " << FOMs[i].at(1) << ", " << FOMs[i].at(2) << std::endl;
                 
                 bestworstFOMPoints[i] = GetBestFOM(FOMs[i], points[i]);
@@ -399,25 +399,56 @@ void DrawRegionLims(std::vector<double> fixedPoints, HistList hists_lists, std::
  * refers to whichever one of these was selected.
  * @return std::vector<double> 
  */
-std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixedPoints, int numVar, TH2F *allPathsHist, TH2F *reEmittedHist, TH2F *scatteredHist, std::string signal){
+std::vector<double> GetFOMs(std::vector<double> points, std::vector<double> fixedPoints, int numVar, TH2F *allPathsHist, TH2F *reEmittedHist, TH2F *scatteredHist, std::string signal, std::string fibre){
 
     //FIXME: Pass in vector of hists?
 
     double countReEmitted[3] = {0, 0, 0};
     double countTotal[3] = {0, 0, 0};
 
+    double direct_max_time = allPathsHist->ProjectionY()->GetXaxis()->GetBinCenter(hists_lists.Tracking_Hists().at(5)->ProjectionY()->GetMaximumBin()) + 10;  //hNoEffectPaths
+    double direct_min_time = allPathsHist->ProjectionY()->GetXaxis()->GetBinCenter(hists_lists.Tracking_Hists().at(5)->ProjectionY()->GetMaximumBin()) - 10;  //hNoEffectPaths
+    //FIXME: don't hardcode this:
+    double direct_cos_alpha;
+    if (fibre == "FA089") {  // 10deg off-axis
+        direct_cos_alpha = -0.85; 
+    } else if (fibre == "FA173" or fibre == "FA150" or fibre == "FA093") {  // 20deg off-axis
+        direct_cos_alpha = -0.6;
+    } else {  // on-axis
+        direct_cos_alpha = -0.9;
+    }
+
+    double reflected_max_time = allPathsHist->ProjectionY()->GetXaxis()->GetBinCenter(hists_lists.Tracking_Hists().at(5)->ProjectionY()->GetMaximumBin()) + 10;  //hNoEffectPaths
+    double reflected_min_time = allPathsHist->ProjectionY()->GetXaxis()->GetBinCenter(hists_lists.Tracking_Hists().at(5)->ProjectionY()->GetMaximumBin()) - 10;  //hNoEffectPaths
+    double reflected_cos_alpha = 0.95; //FIXME: don't hardcode this
+
     // Create triangle with fixed points
     triangle Tri = triangle(fixedPoints.at(0), fixedPoints.at(1), fixedPoints.at(2), fixedPoints.at(3),
                             fixedPoints.at(4), fixedPoints.at(5));
 
     // Replace the appropriate point in the triangle with each point in points and see if the bin falls in the triangle.
+    bool in_direct;
+    bool in_reflected;
     for (int i = 0; i < 3; ++i){
         Tri[numVar] = points.at(i);
         for(int x=1; x<reEmittedHist->GetNbinsX()+1; x++){ //loop over histogram bins
             double xBinCenter = reEmittedHist->GetXaxis()->GetBinCenter(x);
             for(int y=1; y<reEmittedHist->GetNbinsY()+1; y++){
                 double yBinCenter = reEmittedHist->GetYaxis()->GetBinCenter(y);
-                if(Tri.check_point_inside_triangle(xBinCenter, yBinCenter)){
+
+                // Check if point is inside direct of reflected region (rectangles). If so, exclude from triangle region
+                if(xBinCenter > direct_cos_alpha or yBinCenter >= direct_max_time or yBinCenter <= direct_min_time){
+                    in_direct = true;
+                    in_reflected = false;
+                } else if(xBinCenter < reflected_cos_alpha or yBinCenter >= reflected_max_time or yBinCenter <= reflected_min_time){
+                    in_direct = false;
+                    in_reflected = true;
+                } else {
+                    in_direct = false;
+                    in_reflected = false;
+                }
+
+                if(Tri.check_point_inside_triangle(xBinCenter, yBinCenter) and !in_direct and !in_reflected){
                     if(signal == "reemitted"){
                         countReEmitted[i] += reEmittedHist->GetBinContent(x,y);
                     }
@@ -560,19 +591,17 @@ HistList GetRegionSelectedHists(std::vector<double> finalPoints, HistList hists_
         double xBinCenter = hists_lists.Tracking_Hists().at(0)->GetXaxis()->GetBinCenter(x);
         for(int y=1; y<hists_lists.Tracking_Hists().at(0)->GetNbinsY()+1; y++){ //loop over histogram bins
             double yBinCenter = hists_lists.Tracking_Hists().at(0)->GetYaxis()->GetBinCenter(y);
-            if(!(Tri.check_point_inside_triangle(xBinCenter, yBinCenter))){
-                for (int i = 0; i < 15; ++i) {
-                    hists_lists.Region_Hists().at(i)->SetBinContent(x,y,0);
-                }
-            }
-            if(xBinCenter > direct_cos_alpha or yBinCenter >= direct_max_time or yBinCenter <= direct_min_time){
+            if (xBinCenter > direct_cos_alpha or yBinCenter >= direct_max_time or yBinCenter <= direct_min_time) {
                 for (int i = 0; i < 15; ++i) {
                     hists_lists.Direct_Hists().at(i)->SetBinContent(x,y,0);
                 }
-            }
-            if(xBinCenter < reflected_cos_alpha or yBinCenter >= reflected_max_time or yBinCenter <= reflected_min_time){
+            } else if (xBinCenter < reflected_cos_alpha or yBinCenter >= reflected_max_time or yBinCenter <= reflected_min_time) {
                 for (int i = 0; i < 15; ++i) {
                     hists_lists.Reflected_Hists().at(i)->SetBinContent(x,y,0);
+                }
+            } else if (!(Tri.check_point_inside_triangle(xBinCenter, yBinCenter))){
+                for (int i = 0; i < 15; ++i) {
+                    hists_lists.Region_Hists().at(i)->SetBinContent(x,y,0);
                 }
             }
         }
